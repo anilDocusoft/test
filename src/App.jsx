@@ -15,6 +15,8 @@ import toast from 'react-hot-toast';
 
 const BasicSelect = () => {
   const [projectId, setProjectId] = useState('171');
+  const [categoryId, setCategoryId] = useState('0');
+  const [descriptionId, setDescriptionId] = useState('0');
   const [folderName, setFolderName] = useState('171');
   const [SectionId, setSectionId] = useState('');
   const [sectionName, setSectionName] = useState('');
@@ -23,9 +25,12 @@ const BasicSelect = () => {
   const [folderData, setFoldersData] = useState({ Table: [] });
   const [foldersData1, setFoldersData1] = useState({ Table: [] });
   const [sectionData, setSectionData] = useState({ Table: [] });
-  const [clientByFolder, setClientByFolder] = useState({ Table: [] });
+  const [clientByFolder, setClientByFolder] = useState({ Table1: [] });
+  const [categoryData, setCategoryData] = useState([]);
   const [subSectionData, setSubSectionData] = useState([]);
-  const [userList, setUserList] = useState([]);
+  const [userList1, setUserList1] = useState([]);
+  const [userList2, setUserList2] = useState([]);
+  const [userList3, setUserList3] = useState([]);
   const [UDFata, setUDFData] = useState({ Table: [] });
   const [documentDate, setDocumentDate] = useState(dayjs('2024-04-17'));
   const [receivedDate, setReceivedDate] = useState(dayjs('2024-04-17'));
@@ -33,6 +38,9 @@ const BasicSelect = () => {
   const [filename2, setFilename2] = useState('');
   const [fileBase64, setFileBase64] = useState('');
   const [descriptions, setDescriptions] = useState()
+  const [clientEmail, setClientEmail] = useState('')
+  const [clientID, setClientID] = useState('')
+  const [client, setClient] = useState('')
 
 
   const testApi = new TestApi();
@@ -76,7 +84,6 @@ const BasicSelect = () => {
       console.error('Error fetching folders:', error);
     }
   };
-
   const getSections = async (ProjectId) => {
     try {
       const response = await testApi.Json_GetSections({
@@ -141,7 +148,6 @@ const BasicSelect = () => {
 
       if (response?.status === 200) {
         const data = JSON.parse(response.data.d);
-        setClientByFolder(data);
       }
     } catch (error) {
       console.error('Error fetching sections:', error);
@@ -183,13 +189,19 @@ const BasicSelect = () => {
 
       if (response?.status === 200) {
         const data = JSON.parse(response.data.d);
-        if (data.Table1) {
-          setUserList(data?.Table1 || []);
-        } else if (data.Table2) {
-          setUserList(data?.Table2 || []);
+        console.log(data, 'jjjjjjjjjjjjjjjjjjjjjj');
+        if (data.Table) {
+          setUserList3(data?.Table || [])
         }
-        else {
-          setUserList(data?.Table || [])
+        if (data.Table1) {
+          setUserList1(data?.Table1 || []);
+        }
+        if (data.Table2) {
+          setUserList2(data?.Table2 || []);
+        }
+
+        if (data.Table3) {
+          setUserList3(data?.Table || [])
         }
       }
     } catch (error) {
@@ -208,7 +220,14 @@ const BasicSelect = () => {
 
       if (response?.status === 200) {
         const data = JSON.parse(response.data.d);
-        setClientByFolder(data);
+        if (data.Table1) {
+          setCategoryData(data?.Table1 || []);
+        } else if (data.Table2) {
+          setCategoryData(data?.Table2 || []);
+        }
+        else {
+          setCategoryData(data?.Table || [])
+        }
       }
     } catch (error) {
       console.error('Error fetching sections:', error);
@@ -218,14 +237,14 @@ const BasicSelect = () => {
     e.preventDefault();
     try {
       const response = await testApi.Json_RegisterItem({
-        Email: 'patrick@docusoft.net',
+        Email: clientEmail,
         password: 'UGF0cmljazEyMy4=',
         agrno: "0003",
         EmailMessageId: "",
         actionByDate: "",
         actionDate: "",
         categoryId: 0,
-        clientname: "FERN AND FARROW LTD Edit",
+        clientname: client,
         deptId: 0,
         deptName: "",
         description: descriptions,
@@ -272,6 +291,16 @@ const BasicSelect = () => {
       getClientByFolder(FolderID);
     }
   };
+
+  const handleClientChange = (e) => {
+    const selectedFolder = clientByFolder.Table1.find(folder => folder.ClientID === e.target.value);
+    if (selectedFolder) {
+      const { Client, ClientID, Email } = selectedFolder;
+      setClient(Client);
+      setClientID(ClientID)
+      setClientEmail(Email);
+    }
+  };
   const handleSectionChange = (e) => {
     const selectedFolder = sectionData.Table.find(section => section.SecID === e.target.value);
     if (selectedFolder) {
@@ -306,8 +335,8 @@ const BasicSelect = () => {
     getUDF('171')
     Json_GetFolderData()
   }, []);
+  console.log(userList1, userList2, userList3);
 
-  console.log(foldersData1,);
 
   return (
     <Box
@@ -345,7 +374,7 @@ const BasicSelect = () => {
       </FormControl>
       <Box flexDirection={{ xs: 'column', sm: 'column', md: 'row' }} width={'90%'} justifyContent={'space-between'} display={'flex'}>
 
-        <Box minWidth={'370px'} width={{ sm: '100%', md: '30%' }} padding="16px">
+        <Box minWidth={{ sm: "fit-content", md: "370px" }} width={{ sm: '100%', md: '30%' }} padding="16px">
           <FormControl fullWidth margin="normal">
             <InputLabel id="folder-select-label">Select Folder</InputLabel>
             <Select
@@ -383,18 +412,18 @@ const BasicSelect = () => {
             </Select>
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <InputLabel id="UDF-select-label">Select Reference</InputLabel>
+            <InputLabel id="client-select-label">Select Reference</InputLabel>
             <Select
-              labelId="UDF-select-label"
+              labelId="client-select-label"
               id="section-UDF"
-              value={UDFValue || ''}
+              value={clientID || ''}
               label="Select Section"
-              onChange={(e) => setUDFValue(e.target.value)}
+              onChange={handleClientChange}
             >
-              {UDFata.Table.map((option, index) => {
+              {clientByFolder?.Table1?.map((option, index) => {
                 return (
-                  <MenuItem key={index} value={option.SecID}>
-                    {option.Sec}
+                  <MenuItem key={index} value={option.ClientID}>
+                    {option.Client}
                   </MenuItem>
                 )
               })}
@@ -415,6 +444,52 @@ const BasicSelect = () => {
                     return (
                       <MenuItem key={index} value={option.SubSectionID}>
                         {option.SubSection}
+                      </MenuItem>
+                    )
+                  })}
+
+                </Select>
+              </FormControl>
+            ) : null
+          }
+          {
+            categoryData.length > 0 ? (
+              <FormControl fullWidth margin="normal">
+                <InputLabel id="section-category">Select Category</InputLabel>
+                <Select
+                  labelId="category-select-label"
+                  id="section-category"
+                  value={categoryId || ''}
+                  label="Select Section"
+                  onChange={(e) => setCategoryId(e.target.value)}
+                >
+                  {categoryData?.map((option, index) => {
+                    return (
+                      <MenuItem key={index} value={option.SDTypeId}>
+                        {option.Description}
+                      </MenuItem>
+                    )
+                  })}
+
+                </Select>
+              </FormControl>
+            ) : null
+          }
+          {
+            userList1.length > 0 ? (
+              <FormControl fullWidth margin="normal">
+                <InputLabel id="section-Description">Select Description</InputLabel>
+                <Select
+                  labelId="Description-select-label"
+                  id="section-Description"
+                  value={descriptions || ''}
+                  label="Select Section"
+                  onChange={(e) => setDescriptions(e.target.value)}
+                >
+                  {userList1?.map((option, index) => {
+                    return (
+                      <MenuItem key={index} value={option.Comment}>
+                        {option.Comment}
                       </MenuItem>
                     )
                   })}
@@ -447,6 +522,7 @@ const BasicSelect = () => {
             id="outlined-multiline-static"
             label="Description"
             multiline
+            value={descriptions}
             fullWidth
             onChange={(e) => setDescriptions(e.target.value)}
             rows={4}
@@ -459,8 +535,8 @@ const BasicSelect = () => {
         </Box>
         <Box overflow={'auto'} width={{ sm: '100%', md: '70%' }} padding="16px">
           {
-            userList.length > 0 ? (
-              <DataTable data={userList} />) : <Box  >No Data </Box>
+            userList1.length > 0 ? (
+              <DataTable data={userList1} />) : <Box  >No Data </Box>
           }
         </Box>
       </Box>
