@@ -2,8 +2,9 @@ import { DataGrid } from '@mui/x-data-grid';
 import Paper from '@mui/material/Paper';
 
 const columns = [
-    { field: 'id', headerName: 'ID', width: 340 },
-    { field: 'Comment', headerName: 'Comment', width: 330 },
+    { field: 'id', headerName: 'ID', width: 110 },
+    { field: 'ForwardTo', headerName: 'ForwardTo', width: 230 },
+    { field: 'UserEmail', headerName: 'UserEmail', width: 230 },
 
 ];
 
@@ -11,21 +12,27 @@ const columns = [
 
 const paginationModel = { page: 0, pageSize: 5 };
 
-export default function DataTable({ data }) {
-    console.log(data, 'kkkkkkkkkkk');
+export default function DataTable({ data, setSelectedRow }) {
 
     const rows = data?.map(item => ({
-        id: item.ID, // Map the ID field to 'id' for DataGrid
-        Comment: item.Comment || '-',
+        id: item.ID,
+        ForwardTo: item.ForwardTo || '-',
+        UserEmail: item.UserEmail || '-',
     }));
+    const handleRowClick = (params) => {
+        setSelectedRow(true);
+        // setSelectedRow(params.row);
+    };
 
     return (
-        <Paper sx={{ height: '100%', width: '700px' }}>
+        <Paper sx={{ height: '100%', width: '100%' }}>
             <DataGrid
                 rows={rows}
                 columns={columns}
                 initialState={{ pagination: { paginationModel } }}
-                pageSizeOptions={[5, 10]}
+                pageSizeOptions={[10, 20, 50, 100]}
+                onRowClick={handleRowClick}
+
             />
         </Paper>
     );
